@@ -13,9 +13,12 @@ Source1:          cinder.conf
 Source2:          cinder.logrotate
 Source3:          cinder-tgt.conf
 
-Source10:         openstack-cinder-api.service
-Source11:         openstack-cinder-scheduler.service
-Source12:         openstack-cinder-volume.service
+Source10:         openstack-cinder-api.init
+Source100:        openstack-cinder-api.upstart
+Source11:         openstack-cinder-scheduler.init
+Source110:        openstack-cinder-scheduler.upstart
+Source12:         openstack-cinder-volume.init
+Source120:        openstack-cinder-volume.upstart
 
 Source20:         cinder-sudoers
 
@@ -24,12 +27,20 @@ Source20:         cinder-sudoers
 #
 Patch0001: 0001-Ensure-we-don-t-access-the-net-when-building-docs.patch
 
+# This is EPEL specific and not upstream
+Patch100:         openstack-cinder-newdeps.patch
+
 BuildArch:        noarch
 BuildRequires:    intltool
-BuildRequires:    python-sphinx
+BuildRequires:    python-sphinx10
 BuildRequires:    python-setuptools
 BuildRequires:    python-netaddr
 BuildRequires:    openstack-utils
+# These are required to build due to the requirements check added
+BuildRequires:    python-paste-deploy1.5
+BuildRequires:    python-routes1.12
+BuildRequires:    python-sqlalchemy0.7
+BuildRequires:    python-webob1.0
 
 Requires:         openstack-utils
 Requires:         python-cinder = %{version}-%{release}
@@ -37,9 +48,9 @@ Requires:         python-cinder = %{version}-%{release}
 # as convenience
 Requires:         python-cinderclient
 
-Requires(post):   systemd-units
-Requires(preun):  systemd-units
-Requires(postun): systemd-units
+Requires(post):   chkconfig
+Requires(postun): initscripts
+Requires(preun):  chkconfig
 Requires(pre):    shadow-utils
 
 Requires:         lvm2
@@ -73,12 +84,12 @@ Requires:         python-lxml
 Requires:         python-anyjson
 Requires:         python-cheetah
 
-Requires:         python-sqlalchemy
+Requires:         python-sqlalchemy0.7
 Requires:         python-migrate
 
-Requires:         python-paste-deploy
-Requires:         python-routes
-Requires:         python-webob
+Requires:         python-paste-deploy1.5
+Requires:         python-routes1.12
+Requires:         python-webob1.0
 
 Requires:         python-glanceclient >= 1:0
 
@@ -95,14 +106,13 @@ Group:            Documentation
 
 Requires:         %{name} = %{version}-%{release}
 
-BuildRequires:    systemd-units
 BuildRequires:    graphviz
 
 # Required to build module documents
 BuildRequires:    python-eventlet
-BuildRequires:    python-routes
-BuildRequires:    python-sqlalchemy
-BuildRequires:    python-webob
+BuildRequires:    python-routes1.12
+BuildRequires:    python-sqlalchemy0.7
+BuildRequires:    python-webob1.0
 # while not strictly required, quiets the build down when building docs.
 BuildRequires:    python-migrate, python-iso8601
 
@@ -117,6 +127,9 @@ This package contains documentation files for cinder.
 %setup -q -n cinder-%{version}
 
 %patch0001 -p1
+
+# Apply EPEL patch
+%patch100 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -146,7 +159,7 @@ export PYTHONPATH="$( pwd ):$PYTHONPATH"
 pushd doc
 
 %if 0%{?with_doc}
-SPHINX_DEBUG=1 sphinx-build -b html source build/html
+SPHINX_DEBUG=1 sphinx-1.0-build -b html source build/html
 # Fix hidden-file-or-dir warnings
 rm -fr build/html/.doctrees build/html/.buildinfo
 %endif
@@ -154,7 +167,7 @@ rm -fr build/html/.doctrees build/html/.buildinfo
 # Create dir link to avoid a sphinx-build exception
 mkdir -p build/man/.doctrees/
 ln -s .  build/man/.doctrees/man
-SPHINX_DEBUG=1 sphinx-build -b man -c source source/man build/man
+SPHINX_DEBUG=1 sphinx-1.0-build -b man -c source source/man build/man
 mkdir -p %{buildroot}%{_mandir}/man1
 install -p -D -m 644 build/man/*.1 %{buildroot}%{_mandir}/man1/
 
@@ -175,9 +188,9 @@ install -p -D -m 640 etc/cinder/api-paste.ini %{buildroot}%{_sysconfdir}/cinder/
 install -p -D -m 640 etc/cinder/policy.json %{buildroot}%{_sysconfdir}/cinder/policy.json
 
 # Install initscripts for services
-install -p -D -m 644 %{SOURCE10} %{buildroot}%{_unitdir}/openstack-cinder-api.service
-install -p -D -m 644 %{SOURCE11} %{buildroot}%{_unitdir}/openstack-cinder-scheduler.service
-install -p -D -m 644 %{SOURCE12} %{buildroot}%{_unitdir}/openstack-cinder-volume.service
+install -p -D -m 755 %{SOURCE10} %{buildroot}%{_initrddir}/openstack-cinder-api
+install -p -D -m 755 %{SOURCE11} %{buildroot}%{_initrddir}/openstack-cinder-scheduler
+install -p -D -m 755 %{SOURCE12} %{buildroot}%{_initrddir}/openstack-cinder-volume
 
 # Install sudoers
 install -p -D -m 440 %{SOURCE20} %{buildroot}%{_sysconfdir}/sudoers.d/cinder
@@ -187,6 +200,12 @@ install -p -D -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/logrotate.d/openstack
 
 # Install pid directory
 install -d -m 755 %{buildroot}%{_localstatedir}/run/cinder
+
+# Install upstart jobs examples
+install -d -m 755 %{buildroot}%{_datadir}/cinder
+install -p -m 644 %{SOURCE100} %{buildroot}%{_datadir}/cinder/
+install -p -m 644 %{SOURCE110} %{buildroot}%{_datadir}/cinder/
+install -p -m 644 %{SOURCE120} %{buildroot}%{_datadir}/cinder/
 
 # Install rootwrap files in /usr/share/cinder/rootwrap
 mkdir -p %{buildroot}%{_datarootdir}/cinder/rootwrap/
@@ -209,23 +228,24 @@ exit 0
 %post
 if [ $1 -eq 1 ] ; then
     # Initial installation
-    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+    for svc in volume api scheduler; do
+        /sbin/chkconfig --add openstack-cinder-$svc
+    done
 fi
 
 %preun
 if [ $1 -eq 0 ] ; then
     for svc in volume api scheduler; do
-        /bin/systemctl --no-reload disable openstack-cinder-${svc}.service > /dev/null 2>&1 || :
-        /bin/systemctl stop openstack-cinder-${svc}.service > /dev/null 2>&1 || :
+        /sbin/service openstack-cinder-${svc} stop > /dev/null 2>&1
+        /sbin/chkconfig --del openstack-cinder-${svc}
     done
 fi
 
 %postun
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ] ; then
     # Package upgrade, not uninstall
     for svc in volume api scheduler; do
-        /bin/systemctl try-restart openstack-cinder-${svc}.service >/dev/null 2>&1 || :
+        /sbin/service openstack-cinder-${svc} condrestart > /dev/null 2>&1 || :
     done
 fi
 
@@ -246,7 +266,7 @@ fi
 %dir %attr(0755, cinder, root) %{_sysconfdir}/cinder/volumes
 
 %{_bindir}/cinder-*
-%{_unitdir}/*.service
+%{_initrddir}/openstack-cinder-*
 %{_datarootdir}/cinder
 %{_mandir}/man1/cinder*.1.gz
 
@@ -265,18 +285,5 @@ fi
 %endif
 
 %changelog
-* Thu Sep 27 2012 Pádraig Brady <P@draigBrady.com> - 2012.2-1
-- Update to Folsom final
-
-* Fri Sep 21 2012 Pádraig Brady <P@draigBrady.com> - 2012.2-0.5.rc1
-- Update to Folsom RC1
-
-* Fri Sep 21 2012 Pádraig Brady <P@draigBrady.com> - 2012.2-0.4.f3
-- Fix to ensure that tgt configuration is honored
-
-* Mon Sep 17 2012 Pádraig Brady <P@draigBrady.com> - 2012.2-0.3.f3
-- Move user config out of /etc/cinder/api-paste.ini
-- Require python-cinderclient
-
-* Mon Sep  3 2012 Pádraig Brady <P@draigBrady.com> - 2012.2-0.2.f3
-- Initial release
+* Wed Oct 24 2012 Pádraig Brady <P@draigBrady.com> - 2012.2-1
+- Initial Folsom release

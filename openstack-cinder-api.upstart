@@ -1,0 +1,8 @@
+description "OpenStack Cinder API Server"
+
+start on stopped rc RUNLEVEL=[2345]
+stop on runlevel [S016]
+
+respawn
+
+exec su -s /bin/sh -c "exec /usr/bin/cinder-api --config-file /etc/cinder/cinder.conf --logfile /var/log/cinder/api.log" cinder
