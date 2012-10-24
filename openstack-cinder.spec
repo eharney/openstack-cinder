@@ -2,7 +2,7 @@
 
 Name:             openstack-cinder
 Version:          2012.2
-Release:          1%{?dist}
+Release:          2%{?dist}
 Summary:          OpenStack Volume service
 
 Group:            Applications/System
@@ -285,5 +285,5 @@ fi
 %endif
 
 %changelog
-* Wed Oct 24 2012 Pádraig Brady <P@draigBrady.com> - 2012.2-1
+* Wed Oct 24 2012 Pádraig Brady <P@draigBrady.com> - 2012.2-2
 - Initial Folsom release
