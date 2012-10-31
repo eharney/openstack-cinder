@@ -62,3 +62,20 @@ diff -Naur cinder-2012.2.orig/bin/cinder-manage cinder-2012.2/bin/cinder-manage
  FLAGS = flags.FLAGS
  
  
+diff -Naur cinder-2012.2.orig/cinder/db/sqlalchemy/migration.py cinder-2012.2/cinder/db/sqlalchemy/migration.py
+--- cinder-2012.2.orig/cinder/db/sqlalchemy/migration.py	2012-10-30 17:51:47.073636210 +0000
++++ cinder-2012.2/cinder/db/sqlalchemy/migration.py	2012-10-30 17:56:03.974051764 +0000
+@@ -57,7 +57,12 @@
+ 
+ 
+ # NOTE(jkoelker) Delay importing migrate until we are patched
+-from migrate import exceptions as versioning_exceptions
++try:
++    # Try the more specific path first (migrate <= 0.6)
++    from migrate.versioning import exceptions as versioning_exceptions
++except ImportError:
++    # Use the newer path (migrate >= 0.7)
++    from migrate import exceptions as versioning_exceptions
+ from migrate.versioning import api as versioning_api
+ from migrate.versioning.repository import Repository
+ 

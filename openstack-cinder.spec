@@ -2,7 +2,7 @@
 
 Name:             openstack-cinder
 Version:          2012.2
-Release:          2%{?dist}
+Release:          3%{?dist}
 Summary:          OpenStack Volume service
 
 Group:            Applications/System
@@ -285,5 +285,8 @@ fi
 %endif
 
 %changelog
+* Wed Oct 31 2012 Pádraig Brady <P@draigBrady.com> - 2012.2-3
+- Adjust to be compatible with python-migrate-0.6
+
 * Wed Oct 24 2012 Pádraig Brady <P@draigBrady.com> - 2012.2-2
 - Initial Folsom release
