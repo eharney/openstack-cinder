@@ -2,7 +2,7 @@
 
 Name:             openstack-cinder
 Version:          2012.2
-Release:          3%{?dist}
+Release:          4%{?dist}
 Summary:          OpenStack Volume service
 
 Group:            Applications/System
@@ -75,7 +75,6 @@ Requires:         python-qpid
 Requires:         python-kombu
 Requires:         python-amqplib
 
-Requires:         python-daemon
 Requires:         python-eventlet
 Requires:         python-greenlet
 Requires:         python-iso8601
@@ -285,6 +284,9 @@ fi
 %endif
 
 %changelog
+* Wed Nov 14 2012 Eric Harney <eharney@redhat.com> - 2012.2-4
+- Remove unused dependency on python-daemon
+
 * Wed Oct 31 2012 Pádraig Brady <P@draigBrady.com> - 2012.2-3
 - Adjust to be compatible with python-migrate-0.6
 
