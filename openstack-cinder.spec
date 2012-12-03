@@ -1,8 +1,8 @@
 %global with_doc %{!?_without_doc:1}%{?_without_doc:0}
 
 Name:             openstack-cinder
-Version:          2012.2
-Release:          4%{?dist}
+Version:          2012.2.1
+Release:          1%{?dist}
 Summary:          OpenStack Volume service
 
 Group:            Applications/System
@@ -23,7 +23,7 @@ Source120:        openstack-cinder-volume.upstart
 Source20:         cinder-sudoers
 
 #
-# patches_base=2012.2
+# patches_base=2012.2.1
 #
 Patch0001: 0001-Ensure-we-don-t-access-the-net-when-building-docs.patch
 
@@ -284,6 +284,9 @@ fi
 %endif
 
 %changelog
+* Mon Dec 03 2012 Eric Harney <eharney@redhat.com> - 2012.2.1-1
+- Update to Folsom stable release 1
+
 * Wed Nov 14 2012 Eric Harney <eharney@redhat.com> - 2012.2-4
 - Remove unused dependency on python-daemon
 
