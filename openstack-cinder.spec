@@ -2,13 +2,13 @@
 
 Name:             openstack-cinder
 Version:          2013.1
-Release:          0.1.g1%{?dist}
+Release:          0.1.g2%{?dist}
 Summary:          OpenStack Volume service
 
 Group:            Applications/System
 License:          ASL 2.0
 URL:              http://www.openstack.org/software/openstack-storage/
-Source0:          https://launchpad.net/cinder/grizzly/grizzly-1/+download/cinder-2013.1~g1.tar.gz
+Source0:          https://launchpad.net/cinder/grizzly/grizzly-2/+download/cinder-2013.1~g2.tar.gz
 Source1:          cinder.conf
 Source2:          cinder.logrotate
 Source3:          cinder-tgt.conf
@@ -23,7 +23,7 @@ Source120:        openstack-cinder-volume.upstart
 Source20:         cinder-sudoers
 
 #
-# patches_base=grizzly-1
+# patches_base=grizzly-2
 #
 Patch0001: 0001-Ensure-we-don-t-access-the-net-when-building-docs.patch
 
@@ -284,6 +284,9 @@ fi
 %endif
 
 %changelog
+* Mon Jan 14 2013 Eric Harney <eharney@redhat.com> - 2013.1-0.1.g2
+- Update to Grizzly milestone 2
+
 * Thu Dec 20 2012 Eric Harney <eharney@redhat.com> - 2013.1-0.1.g1
 - Update to Grizzly milestone 1
 
