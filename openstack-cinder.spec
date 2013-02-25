@@ -2,13 +2,13 @@
 
 Name:             openstack-cinder
 Version:          2013.1
-Release:          0.1.g2%{?dist}
+Release:          0.2.g3%{?dist}
 Summary:          OpenStack Volume service
 
 Group:            Applications/System
 License:          ASL 2.0
 URL:              http://www.openstack.org/software/openstack-storage/
-Source0:          https://launchpad.net/cinder/grizzly/grizzly-2/+download/cinder-2013.1~g2.tar.gz
+Source0:          https://launchpad.net/cinder/grizzly/grizzly-3/+download/cinder-2013.1.g3.tar.gz
 Source1:          cinder.conf
 Source2:          cinder.logrotate
 Source3:          cinder-tgt.conf
@@ -23,7 +23,7 @@ Source120:        openstack-cinder-volume.upstart
 Source20:         cinder-sudoers
 
 #
-# patches_base=grizzly-2
+# patches_base=grizzly-3
 #
 Patch0001: 0001-Ensure-we-don-t-access-the-net-when-building-docs.patch
 
@@ -123,7 +123,7 @@ This package contains documentation files for cinder.
 %endif
 
 %prep
-%setup -q -n cinder-%{version}
+%setup -q -n cinder-%{version}.g3
 
 %patch0001 -p1
 
@@ -275,7 +275,7 @@ fi
 %files -n python-cinder
 %doc LICENSE
 %{python_sitelib}/cinder
-%{python_sitelib}/cinder-%{version}-*.egg-info
+%{python_sitelib}/cinder-%{version}*.egg-info
 
 %if 0%{?with_doc}
 %files doc
@@ -283,7 +283,10 @@ fi
 %endif
 
 %changelog
-* Mon Jan 14 2013 Eric Harney <eharney@redhat.com> - 2013.1-0.1.g2
+* Wed Feb 27 2013 Eric Harney <eharney@redhat.com> - 2013.1-0.2.g3
+- Update to Grizzly milestone 3
+
+* Thu Jan 10 2013 Eric Harney <eharney@redhat.com> - 2013.1-0.1.g2
 - Update to Grizzly milestone 2
 
 * Thu Dec 20 2012 Eric Harney <eharney@redhat.com> - 2013.1-0.1.g1
