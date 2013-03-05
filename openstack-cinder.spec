@@ -2,7 +2,7 @@
 
 Name:             openstack-cinder
 Version:          2013.1
-Release:          0.2.g3%{?dist}
+Release:          0.4.g3%{?dist}
 Summary:          OpenStack Volume service
 
 Group:            Applications/System
@@ -82,6 +82,7 @@ Requires:         python-netaddr
 Requires:         python-lxml
 Requires:         python-anyjson
 Requires:         python-cheetah
+Requires:         python-stevedore
 
 Requires:         python-sqlalchemy0.7
 Requires:         python-migrate
@@ -283,6 +284,9 @@ fi
 %endif
 
 %changelog
+* Tue Mar 05 2013 Pádraig Brady <P@draigBrady.com> - 2013.1.0.4.g3
+- Add dependency on python-stevedore
+
 * Wed Feb 27 2013 Eric Harney <eharney@redhat.com> - 2013.1-0.2.g3
 - Update to Grizzly milestone 3
 
