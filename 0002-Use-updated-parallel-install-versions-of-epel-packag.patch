@@ -1,0 +1,106 @@
+From 632186c1a4e3d971bab1d017ea3289e92c85d86c Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?P=C3=A1draig=20Brady?= <P@draigBrady.com>
+Date: Wed, 24 Oct 2012 13:44:37 +0100
+Subject: [PATCH] Use updated parallel install versions of epel package
+
+Use sqlalchemy >= 0.6.3 WebOb >= 1.0 Routes >= 1.12.3 PasteDeploy >= 1.5.0
+and depend on the parallel installable
+versions of these packages to satisfy those requirements.
+
+Delve into pkg_resources a little to get it to modify sys.path,
+so that our parallel installed egg takes precedence over the
+system default module versions.
+(cherry picked from commit 7b25747ffc21d0771e864f57ab2088725c8851f0)
+
+Conflicts:
+	bin/cinder-manage
+---
+ bin/cinder-manage                 |  7 ++++---
+ cinder/__init__.py                | 30 ++++++++++++++++++++++++++++++
+ cinder/db/sqlalchemy/migration.py |  7 ++++++-
+ 3 files changed, 40 insertions(+), 4 deletions(-)
+
+diff --git a/bin/cinder-manage b/bin/cinder-manage
+index de7955d..364944a 100755
+--- a/bin/cinder-manage
++++ b/bin/cinder-manage
+@@ -59,9 +59,6 @@ import os
+ import sys
+ import uuid
+ 
+-from sqlalchemy import create_engine, MetaData, Table
+-from sqlalchemy.ext.declarative import declarative_base
+-from sqlalchemy.orm import sessionmaker
+ 
+ 
+ # If ../cinder/__init__.py exists, add ../ to Python search path, so that
+@@ -87,6 +84,10 @@ from cinder.openstack.common import uuidutils
+ from cinder import utils
+ from cinder import version
+ 
++from sqlalchemy import create_engine, MetaData, Table
++from sqlalchemy.orm import sessionmaker
++from sqlalchemy.ext.declarative import declarative_base
++
+ FLAGS = flags.FLAGS
+ 
+ 
+diff --git a/cinder/__init__.py b/cinder/__init__.py
+index f8db8e8..1b4ac39 100644
+--- a/cinder/__init__.py
++++ b/cinder/__init__.py
+@@ -31,6 +31,36 @@
+ .. moduleauthor:: Andy Smith <andy@anarkystic.com>
+ """
+ 
++import sys
++import pkg_resources
++
++# If there is a conflicting non egg module,
++# i.e. an older standard system module installed,
++# then replace it with this requirement
++def replace_dist(requirement):
++    try:
++        return pkg_resources.require(requirement)
++    except pkg_resources.VersionConflict:
++        e = sys.exc_info()[1]
++        dist=e.args[0]
++        req=e.args[1]
++        if dist.key == req.key and not dist.location.endswith('.egg'):
++            del pkg_resources.working_set.by_key[dist.key]
++            # We assume there is no need to adjust sys.path
++            # and the associated pkg_resources.working_set.entries
++            return pkg_resources.require(requirement)
++
++replace_dist("WebOb >= 1.0")
++replace_dist("SQLAlchemy >= 0.6.3")
++replace_dist("Routes >= 1.12.3")
++
++replace_dist("PasteDeploy >= 1.5.0")
++# This hack is needed because replace_dist() results in
++# the standard paste module path being at the start of __path__.
++# TODO: See can we get pkg_resources to do the right thing directly
++import paste
++paste.__path__.insert(0, paste.__path__.pop(-1))
++
+ import gettext
+ 
+ 
+diff --git a/cinder/db/sqlalchemy/migration.py b/cinder/db/sqlalchemy/migration.py
+index 5365d9c..e2fcd83 100644
+--- a/cinder/db/sqlalchemy/migration.py
++++ b/cinder/db/sqlalchemy/migration.py
+@@ -57,7 +57,12 @@ if (not hasattr(migrate, '__version__') or
+ 
+ 
+ # NOTE(jkoelker) Delay importing migrate until we are patched
+-from migrate import exceptions as versioning_exceptions
++try:
++    # Try the more specific path first (migrate <= 0.6)
++    from migrate.versioning import exceptions as versioning_exceptions
++except ImportError:
++    # Use the newer path (migrate >= 0.7)
++    from migrate import exceptions as versioning_exceptions
+ from migrate.versioning import api as versioning_api
+ from migrate.versioning.repository import Repository
+ 

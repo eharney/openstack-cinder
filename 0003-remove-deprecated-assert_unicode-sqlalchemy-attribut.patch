@@ -1,4 +1,4 @@
-From a7df1178d47dc126636d49b8ac13b4b229f58015 Mon Sep 17 00:00:00 2001
+From 2e3d9b429a79a9e6f39eba7907386bf30cb777d6 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?P=C3=A1draig=20Brady?= <pbrady@redhat.com>
 Date: Tue, 2 Apr 2013 14:44:51 +0100
 Subject: [PATCH] remove deprecated assert_unicode sqlalchemy attribute
