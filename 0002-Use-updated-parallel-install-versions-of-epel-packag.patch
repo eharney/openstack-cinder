@@ -1,19 +1,15 @@
-From 632186c1a4e3d971bab1d017ea3289e92c85d86c Mon Sep 17 00:00:00 2001
+From a9543b46ec803a5f15e947cfb580d89b92d2d2cd Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?P=C3=A1draig=20Brady?= <P@draigBrady.com>
 Date: Wed, 24 Oct 2012 13:44:37 +0100
 Subject: [PATCH] Use updated parallel install versions of epel package
 
-Use sqlalchemy >= 0.6.3 WebOb >= 1.0 Routes >= 1.12.3 PasteDeploy >= 1.5.0
+Use sqlalchemy >= 0.6.3 WebOb >= 1.2 Routes >= 1.12.3 PasteDeploy >= 1.5.0
 and depend on the parallel installable
 versions of these packages to satisfy those requirements.
 
 Delve into pkg_resources a little to get it to modify sys.path,
 so that our parallel installed egg takes precedence over the
 system default module versions.
-(cherry picked from commit 7b25747ffc21d0771e864f57ab2088725c8851f0)
-
-Conflicts:
-	bin/cinder-manage
 ---
  bin/cinder-manage                 |  7 ++++---
  cinder/__init__.py                | 30 ++++++++++++++++++++++++++++++
@@ -21,10 +17,10 @@ Conflicts:
  3 files changed, 40 insertions(+), 4 deletions(-)
 
 diff --git a/bin/cinder-manage b/bin/cinder-manage
-index de7955d..364944a 100755
+index 8e0de60..02a30b5 100755
 --- a/bin/cinder-manage
 +++ b/bin/cinder-manage
-@@ -59,9 +59,6 @@ import os
+@@ -58,9 +58,6 @@ import os
  import sys
  import uuid
  
@@ -46,13 +42,14 @@ index de7955d..364944a 100755
  
  
 diff --git a/cinder/__init__.py b/cinder/__init__.py
-index f8db8e8..1b4ac39 100644
+index d765b08..720320e 100644
 --- a/cinder/__init__.py
 +++ b/cinder/__init__.py
-@@ -31,6 +31,36 @@
+@@ -30,3 +30,33 @@
+ .. moduleauthor:: Manish Singh <yosh@gimp.org>
  .. moduleauthor:: Andy Smith <andy@anarkystic.com>
  """
- 
++
 +import sys
 +import pkg_resources
 +
@@ -72,7 +69,7 @@ index f8db8e8..1b4ac39 100644
 +            # and the associated pkg_resources.working_set.entries
 +            return pkg_resources.require(requirement)
 +
-+replace_dist("WebOb >= 1.0")
++replace_dist("WebOb >= 1.2")
 +replace_dist("SQLAlchemy >= 0.6.3")
 +replace_dist("Routes >= 1.12.3")
 +
@@ -82,10 +79,6 @@ index f8db8e8..1b4ac39 100644
 +# TODO: See can we get pkg_resources to do the right thing directly
 +import paste
 +paste.__path__.insert(0, paste.__path__.pop(-1))
-+
- import gettext
- 
- 
 diff --git a/cinder/db/sqlalchemy/migration.py b/cinder/db/sqlalchemy/migration.py
 index 5365d9c..e2fcd83 100644
 --- a/cinder/db/sqlalchemy/migration.py
