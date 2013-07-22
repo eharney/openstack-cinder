@@ -1,4 +1,4 @@
-From a9543b46ec803a5f15e947cfb580d89b92d2d2cd Mon Sep 17 00:00:00 2001
+From 09f474a22aa79e1fa13db7e66d1af7bc0e6b0dc1 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?P=C3=A1draig=20Brady?= <P@draigBrady.com>
 Date: Wed, 24 Oct 2012 13:44:37 +0100
 Subject: [PATCH] Use updated parallel install versions of epel package
@@ -11,35 +11,35 @@ Delve into pkg_resources a little to get it to modify sys.path,
 so that our parallel installed egg takes precedence over the
 system default module versions.
 ---
- bin/cinder-manage                 |  7 ++++---
- cinder/__init__.py                | 30 ++++++++++++++++++++++++++++++
- cinder/db/sqlalchemy/migration.py |  7 ++++++-
- 3 files changed, 40 insertions(+), 4 deletions(-)
+ bin/cinder-manage                 |    7 +++----
+ cinder/__init__.py                |   30 ++++++++++++++++++++++++++++++
+ cinder/db/sqlalchemy/migration.py |    7 ++++++-
+ 3 files changed, 39 insertions(+), 5 deletions(-)
 
 diff --git a/bin/cinder-manage b/bin/cinder-manage
-index 8e0de60..02a30b5 100755
+index 021c1c8..c809b30 100755
 --- a/bin/cinder-manage
 +++ b/bin/cinder-manage
-@@ -58,9 +58,6 @@ import os
- import sys
+@@ -60,10 +60,6 @@ import sys
  import uuid
  
+ from oslo.config import cfg
 -from sqlalchemy import create_engine, MetaData, Table
 -from sqlalchemy.ext.declarative import declarative_base
 -from sqlalchemy.orm import sessionmaker
- 
+-
  
  # If ../cinder/__init__.py exists, add ../ to Python search path, so that
-@@ -87,6 +84,10 @@ from cinder.openstack.common import uuidutils
+ # it will override what happens to be installed in /usr/(local/)lib/python...
+@@ -87,6 +83,9 @@ from cinder.openstack.common import uuidutils
  from cinder import utils
  from cinder import version
  
 +from sqlalchemy import create_engine, MetaData, Table
-+from sqlalchemy.orm import sessionmaker
 +from sqlalchemy.ext.declarative import declarative_base
-+
- FLAGS = flags.FLAGS
++from sqlalchemy.orm import sessionmaker
  
+ CONF = cfg.CONF
  
 diff --git a/cinder/__init__.py b/cinder/__init__.py
 index d765b08..720320e 100644
@@ -80,10 +80,10 @@ index d765b08..720320e 100644
 +import paste
 +paste.__path__.insert(0, paste.__path__.pop(-1))
 diff --git a/cinder/db/sqlalchemy/migration.py b/cinder/db/sqlalchemy/migration.py
-index 5365d9c..e2fcd83 100644
+index e2463bc..9ba7b73 100644
 --- a/cinder/db/sqlalchemy/migration.py
 +++ b/cinder/db/sqlalchemy/migration.py
-@@ -57,7 +57,12 @@ if (not hasattr(migrate, '__version__') or
+@@ -56,7 +56,12 @@ if (not hasattr(migrate, '__version__') or
  
  
  # NOTE(jkoelker) Delay importing migrate until we are patched

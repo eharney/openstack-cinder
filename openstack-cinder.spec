@@ -2,13 +2,13 @@
 
 Name:             openstack-cinder
 Version:          2013.2
-Release:          0.2.b1%{?dist}
+Release:          0.3.b2%{?dist}
 Summary:          OpenStack Volume service
 
 Group:            Applications/System
 License:          ASL 2.0
 URL:              http://www.openstack.org/software/openstack-storage/
-Source0:          https://launchpad.net/cinder/havana/havana-1/+download/cinder-%{version}.b1.tar.gz
+Source0:          https://launchpad.net/cinder/havana/havana-1/+download/cinder-%{version}.b2.tar.gz
 Source1:          cinder.conf
 Source2:          cinder.logrotate
 Source3:          cinder-tgt.conf
@@ -23,12 +23,11 @@ Source120:        openstack-cinder-volume.upstart
 Source20:         cinder-sudoers
 
 #
-# patches_base=2013.2.b1
+# patches_base=2013.2.b2
 #
 Patch0001: 0001-Ensure-we-don-t-access-the-net-when-building-docs.patch
 Patch0002: 0002-Use-updated-parallel-install-versions-of-epel-packag.patch
 Patch0003: 0003-Remove-runtime-dep-on-python-pbr-python-d2to1.patch
-Patch0004: 0004-Adjust-pip-requires-for-EL6.patch
 
 BuildArch:        noarch
 BuildRequires:    intltool
@@ -84,7 +83,6 @@ Requires:         python-lxml
 Requires:         python-anyjson
 Requires:         python-cheetah
 Requires:         python-stevedore
-Requires:         python-suds
 
 Requires:         python-sqlalchemy0.7
 Requires:         python-migrate
@@ -133,12 +131,11 @@ This package contains documentation files for cinder.
 %endif
 
 %prep
-%setup -q -n cinder-%{version}.b1
+%setup -q -n cinder-%{version}.b2
 
 %patch0001 -p1
 %patch0002 -p1
 %patch0003 -p1
-%patch0004 -p1
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -301,6 +298,9 @@ fi
 %endif
 
 %changelog
+* Sun Jul 22 2013 Pádraig Brady <pbrady@redhat.com> - 2013.2-0.3.b2
+- Update to Havana milestone 2
+
 * Thu Jun 13 2013 Eric Harney <eharney@redhat.com> - 2013.2-0.2.b1
 - Update to Havana milestone 1
 
