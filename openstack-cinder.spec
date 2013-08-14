@@ -2,7 +2,7 @@
 
 Name:             openstack-cinder
 Version:          2013.2
-Release:          0.4.b2%{?dist}
+Release:          0.5.b2%{?dist}
 Summary:          OpenStack Volume service
 
 Group:            Applications/System
@@ -19,6 +19,8 @@ Source11:         openstack-cinder-scheduler.init
 Source110:        openstack-cinder-scheduler.upstart
 Source12:         openstack-cinder-volume.init
 Source120:        openstack-cinder-volume.upstart
+Source13:         openstack-cinder-backup.init
+Source130:        openstack-cinder-backup.upstart
 
 Source20:         cinder-sudoers
 
@@ -211,6 +213,7 @@ install -p -D -m 640 etc/cinder/policy.json %{buildroot}%{_sysconfdir}/cinder/po
 install -p -D -m 755 %{SOURCE10} %{buildroot}%{_initrddir}/openstack-cinder-api
 install -p -D -m 755 %{SOURCE11} %{buildroot}%{_initrddir}/openstack-cinder-scheduler
 install -p -D -m 755 %{SOURCE12} %{buildroot}%{_initrddir}/openstack-cinder-volume
+install -p -D -m 755 %{SOURCE13} %{buildroot}%{_initrddir}/openstack-cinder-backup
 
 # Install sudoers
 install -p -D -m 440 %{SOURCE20} %{buildroot}%{_sysconfdir}/sudoers.d/cinder
@@ -226,6 +229,7 @@ install -d -m 755 %{buildroot}%{_datadir}/cinder
 install -p -m 644 %{SOURCE100} %{buildroot}%{_datadir}/cinder/
 install -p -m 644 %{SOURCE110} %{buildroot}%{_datadir}/cinder/
 install -p -m 644 %{SOURCE120} %{buildroot}%{_datadir}/cinder/
+install -p -m 644 %{SOURCE130} %{buildroot}%{_datadir}/cinder/
 
 # Install rootwrap files in /usr/share/cinder/rootwrap
 mkdir -p %{buildroot}%{_datarootdir}/cinder/rootwrap/
@@ -247,14 +251,14 @@ exit 0
 %post
 if [ $1 -eq 1 ] ; then
     # Initial installation
-    for svc in volume api scheduler; do
+    for svc in volume api scheduler backup; do
         /sbin/chkconfig --add openstack-cinder-$svc
     done
 fi
 
 %preun
 if [ $1 -eq 0 ] ; then
-    for svc in volume api scheduler; do
+    for svc in volume api scheduler backup; do
         /sbin/service openstack-cinder-${svc} stop > /dev/null 2>&1
         /sbin/chkconfig --del openstack-cinder-${svc}
     done
@@ -263,7 +267,7 @@ fi
 %postun
 if [ $1 -ge 1 ] ; then
     # Package upgrade, not uninstall
-    for svc in volume api scheduler; do
+    for svc in volume api scheduler backup; do
         /sbin/service openstack-cinder-${svc} condrestart > /dev/null 2>&1 || :
     done
 fi
@@ -304,6 +308,9 @@ fi
 %endif
 
 %changelog
+* Wed Aug 14 2013 Eric Harney <eharney@redhat.com> - 2013.2-0.5.b2
+- Add init scripts for openstack-cinder-backup
+
 * Mon Jul 22 2013 Pádraig Brady <pbrady@redhat.com> - 2013.2-0.4.b2
 - Add dependency on python-suds to support the netapp driver
 - Add dependency on python-keystoneclient for auth token middleware
@@ -325,7 +332,7 @@ fi
 * Thu Apr 04 2013 Eric Harney <eharney@redhat.com> - 2013.1-1
 - Update to Grizzly final release
 
-* Mon Mar 27 2013 Eric Harney <eharney@redhat.com> - 2013.1-0.5.rc3
+* Wed Mar 27 2013 Eric Harney <eharney@redhat.com> - 2013.1-0.5.rc3
 - Update to Grizzly RC3 release
 
 * Mon Mar 25 2013 Eric Harney <eharney@redhat.com> - 2013.1-0.5.rc2
